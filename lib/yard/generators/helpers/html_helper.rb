@@ -9,7 +9,7 @@ else
 end
 
 require 'rubygems'
-begin require 'bluecloth'; rescue LoadError; end
+begin require 'maruku'; rescue LoadError; end
 begin require 'redcloth'; rescue LoadError; end
 
 module YARD
@@ -30,9 +30,9 @@ module YARD
         case markup
         when :markdown
           begin
-            html = BlueCloth.new(text).to_html
+            html = Maruku.new(text).to_html
           rescue NameError
-            STDERR.puts "Missing BlueCloth gem for Markdown formatting. Install it with `gem install BlueCloth`"
+            STDERR.puts "Missing Maruku gem for Markdown formatting. Install it with e.g. `gem install maruku`"
             exit
           end
         when :textile
@@ -193,8 +193,19 @@ module YARD
           end
         end.join
       end
+
+      private
+
+      def markdown_klass
+        markup = options[:markup] || :bluecloth
+        require markup.to_s
+        Kernel.const_get({
+            :maruku => :Maruku,
+            :"rpeg-markdown" => :PEGMarkdown,
+            :rdiscount => :RDiscount,
+            :bluecloth => :BlueCloth,
+          }[markup])
+      end
     end
   end
 end
-    
-    
