@@ -31,14 +31,16 @@ module YARD
         when :markdown
           begin
             html = Maruku.new(text).to_html
-          rescue NameError
+          rescue NameError => e
+            raise e unless e.name == :Maruku
             STDERR.puts "Missing Maruku gem for Markdown formatting. Install it with e.g. `gem install maruku`"
             exit
           end
         when :textile
           begin
             html = RedCloth.new(text).to_html
-          rescue NameError
+          rescue NameError => e
+            raise e unless e.name == :RedCloth
             STDERR.puts "Missing RedCloth gem for Textile formatting. Install it with `gem install RedCloth`"
             exit
           end
