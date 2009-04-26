@@ -245,8 +245,10 @@ module YARD
           
           object.add_file(parser.file, statement.tokens.first.line_no, statement.comments)
 
-          # Add docstring if there is one.
-          object.docstring = statement.comments if statement.comments
+          # Add docstring if there is one and it hasn't already been set.
+          if statement.comments && (object.docstring.nil? || object.docstring.empty?)
+            object.docstring = statement.comments
+          end
           
           # Add source only to non-class non-module objects
           unless object.is_a?(NamespaceObject)
