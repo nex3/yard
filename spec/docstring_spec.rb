@@ -83,7 +83,8 @@ describe YARD::Docstring do
   end
   
   it "should return all valid reference tags along with #tags" do
-    o = CodeObjects::MethodObject.new(:root, 'Foo#bar')
+    m = CodeObjects::ModuleObject.new(:root, :Foo)
+    o = CodeObjects::MethodObject.new(m, :bar)
     o.docstring.add_tag Tags::Tag.new('return', 'testing')
     doc = Docstring.new("@return (see Foo#bar)")
     tags = doc.tags
@@ -94,7 +95,8 @@ describe YARD::Docstring do
   end
   
   it "should return all valid named reference tags along with #tags(name)" do
-    o = CodeObjects::MethodObject.new(:root, 'Foo#bar')
+    m = CodeObjects::ModuleObject.new(:root, :Foo)
+    o = CodeObjects::MethodObject.new(m, :bar)
     o.docstring.add_tag Tags::Tag.new('param', 'testing', nil, '*args')
     o.docstring.add_tag Tags::Tag.new('param', 'NOTtesting', nil, 'notargs')
     doc = Docstring.new("@param *args (see Foo#bar)")
@@ -118,7 +120,8 @@ describe YARD::Docstring do
   end
 
   it "shouldn't be empty if it has ref tags" do
-    o = CodeObjects::MethodObject.new(:root, 'Foo#bar')
+    m = CodeObjects::ModuleObject.new(:root, :Foo)
+    o = CodeObjects::MethodObject.new(m, :Foo)
     o.docstring.add_tag Tags::Tag.new('return', 'testing')
     Docstring.new("@return (see Foo#bar)").should_not be_empty
   end

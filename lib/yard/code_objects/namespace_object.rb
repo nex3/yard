@@ -25,8 +25,17 @@ module YARD::CodeObjects
       else
         opts = SymbolHash[opts]
         children.find do |obj| 
-          opts.each do |meth, value|
-            break false if !(value.is_a?(Array) ? value.include?(obj[meth]) : obj[meth] == value)
+          opts.all? do |meth, value|
+            value = [value] unless value.is_a?(Array)
+            value.any? do |v|
+              case meth
+              when :name; obj.name == v.to_sym
+              when :type
+                return obj.type == v if v.is_a?(Symbol)
+                obj.is_a?(v)
+              else; obj[meth] == v
+              end
+            end
           end
         end
       end
