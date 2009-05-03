@@ -76,7 +76,7 @@ module YARD
           if name.include?("://")
             sp + link_url(name, title, :target => '_parent')
           else
-            obj = P(current_object, name)
+            obj = P(current_object, name, true)
             if obj.is_a?(CodeObjects::Proxy)
               match = text[/(.{0,20}\{.*?#{Regexp.quote name}.*?\}.{0,20})/, 1]
               log.warn "In file `#{current_object.file}':#{current_object.line}: Cannot resolve link to #{obj.path} from text" + (match ? ":" : ".")
@@ -115,7 +115,7 @@ module YARD
       end
     
       def link_object(object, otitle = nil, anchor = nil)
-        object = P(current_object, object) if object.is_a?(String)
+        object = P(current_object, object, true) if object.is_a?(String)
         title = h(otitle ? otitle.to_s : object.path)
         return title unless serializer
 
