@@ -95,10 +95,7 @@ module YARD
       private
       
       def meths_opts
-        { 
-          :included => false, :inherited => false,
-          :scope => scope, :visibility => visibility 
-        }
+        { :inherited => false, :scope => scope, :visibility => visibility }
       end
     end
   end

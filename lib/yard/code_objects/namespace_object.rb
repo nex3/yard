@@ -45,7 +45,7 @@ module YARD::CodeObjects
       opts = SymbolHash[
         :visibility => [:public, :private, :protected],
         :scope => [:class, :instance],
-        :included => true
+        :inherited => true
       ].update(opts)
       
       opts[:visibility] = [opts[:visibility]].flatten
@@ -57,7 +57,7 @@ module YARD::CodeObjects
           opts[:scope].include?(o.scope)
       end
       
-      ourmeths + (opts[:included] ? included_meths(opts) : [])
+      ourmeths + (opts[:inherited] ? included_meths(opts) : [])
     end
     
     def included_meths(opts = {})
@@ -72,9 +72,9 @@ module YARD::CodeObjects
     end
     
     def constants(opts = {})
-      opts = SymbolHash[:included => true].update(opts)
+      opts = SymbolHash[:inherited => true].update(opts)
       consts = children.select {|o| o.is_a? ConstantObject }
-      consts + (opts[:included] ? included_constants : [])
+      consts + (opts[:inherited] ? included_constants : [])
     end
     
     def included_constants

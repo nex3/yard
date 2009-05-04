@@ -69,7 +69,7 @@ module YARD
       def method_list(object)
         vissort = lambda {|vis| vis == :public ? 'a' : (vis == :protected ? 'b' : 'c') }
         
-        object.meths(:inherited => false, :included => false, :visibility => options[:visibility]).reject do |o|
+        object.meths(:inherited => false, :visibility => options[:visibility]).reject do |o|
           o.is_attribute?
         end.sort_by {|o| "#{o.scope}#{vissort.call(o.visibility)}#{o.name}" }
       end

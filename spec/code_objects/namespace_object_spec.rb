@@ -117,8 +117,8 @@ describe YARD::CodeObjects::NamespaceObject, '#constants/#included_constants' do
     consts.should include(P('C::CONST4'))
   end
   
-  it "should allow :included to be set to false to ignore included constants" do
-    consts = P(:C).constants(:included => false)
+  it "should allow :inherited to be set to false to ignore included constants" do
+    consts = P(:C).constants(:inherited => false)
     consts.should_not include(P('A::CONST1'))
     consts.should include(P('C::CONST4'))
   end

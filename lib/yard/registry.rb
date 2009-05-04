@@ -88,7 +88,7 @@ module YARD
           obj = namespace.child(:type => [CodeObjects::ConstantObject, CodeObjects::ClassVariableObject], :name => name)
           return obj if obj
           return unless scan.eos?
-          return namespace.meths(:scope => :class, :included => inherited, :inherited => inherited).
+          return namespace.meths(:scope => :class, :inherited => inherited).
             find {|m| m.name == name}
         end
 
@@ -101,7 +101,7 @@ module YARD
       return unless namespace.is_a?(CodeObjects::NamespaceObject) && scan.scan(CodeObjects::METHODNAMEMATCH) && scan.eos?
 
       name = scan.matched.to_sym
-      opts = {:included => inherited, :inherited => inherited}
+      opts = {:inherited => inherited}
       opts[:scope] = sep == CodeObjects::ISEP ? :instance : :class if sep
       namespace.meths(opts).find {|m| m.name == name}
     end
