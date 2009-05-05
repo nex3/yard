@@ -250,6 +250,11 @@ module YARD
       alias_method :parent, :namespace
       alias_method :parent=, :namespace=
 
+      def to_namespace
+        namespace = self
+        namespace = namespace.namespace until namespace.is_a?(NamespaceObject)
+      end
+
       def tag(name); @docstring.tag(name) end
       def tags(name = nil); @docstring.tags(name) end
       def has_tag?(name); @docstring.has_tag?(name) end

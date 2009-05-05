@@ -96,6 +96,11 @@ describe YARD::CodeObjects::NamespaceObject do
       @meth4 = MethodObject.new(@mod2, :meth)
 
       @children = @mod.children(true)
+
+      @loopy = ModuleObject.new(:root, :Loop)
+      @loopy.mixins(:class) << @loopy
+      @loopy_meth1 = MethodObject.new(@loopy, :inst)
+      @loopy_meth2 = MethodObject.new(@loopy, :class, :class)
     end
 
     it "should include all children" do
@@ -110,6 +115,12 @@ describe YARD::CodeObjects::NamespaceObject do
 
     it "should not include overridden children" do
       @children.should_not include(@meth3)
+    end
+
+    it "shouldn't die on 'extend self'" do
+      children = @loopy.children(true)
+      children.should include(@loopy_meth1)
+      children.should include(@loopy_meth2)
     end
   end
 end
