@@ -192,5 +192,6 @@ def P(arg1, *args)
     name, inherited = args
   end
 
-  YARD::Registry.resolve(namespace, name, true, inherited)
+  return YARD::CodeObjects::Proxy.new(namespace, name) if namespace.is_a?(YARD::CodeObjects::Proxy)
+  YARD::Registry.resolve(namespace, name, inherited) || YARD::CodeObjects::Proxy.new(namespace, name)
 end

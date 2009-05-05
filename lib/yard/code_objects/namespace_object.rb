@@ -22,8 +22,8 @@ module YARD::CodeObjects
     end
     
     def child(opts = {})
-      opts = SymbolHash[:name => opts] if !opts.is_a?(Hash)
-      children.find {|o| check_opts(o, opts) }
+      opts = SymbolHash[:inherited => false, :name => opts] if !opts.is_a?(Hash)
+      children(opts.delete(:inherited)).find {|o| check_opts(o, opts) }
     end
     
     def meths(opts = {})
@@ -74,8 +74,8 @@ module YARD::CodeObjects
 
     protected
 
-    def children_hash
-      merge_children_hash(included_children_hash, local_children_hash)
+    def children_hash(no_class_mixins = false)
+      merge_children_hash(included_children_hash(no_class_mixins), local_children_hash)
     end
 
     def local_children_hash
@@ -85,14 +85,15 @@ module YARD::CodeObjects
       end
     end
 
-    def included_children_hash
+    def included_children_hash(no_class_mixins = false)
       hash = mixins(:instance).inject(mtype_hash) do |h, mixin|
         next h unless mixin.is_a?(NamespaceObject)
         merge_children_hash(h, mixin.children_hash.reject {|k, v| k == :cmeth})
       end
+      return hash if no_class_mixins
       mixins(:class).each do |mixin|
         next unless mixin.is_a?(NamespaceObject)
-        hash[:cmeth].merge!(mixin.children_hash[:imeth].inject({}) do |h, (k, v)|
+        hash[:cmeth].merge!(mixin.children_hash(true)[:imeth].inject({}) do |h, (k, v)|
             h[k] = ExtendedMethodObject.new(v)
             h
           end)

@@ -252,7 +252,8 @@ module YARD
 
       def to_namespace
         namespace = self
-        namespace = namespace.namespace until namespace.is_a?(NamespaceObject)
+        namespace = namespace.namespace until namespace.nil? || namespace.is_a?(NamespaceObject)
+        namespace
       end
 
       def tag(name); @docstring.tag(name) end
