@@ -123,7 +123,7 @@ describe YARD::CodeObjects::ClassObject, "#constants / #inherited_constants" do
   end
   
   it "should not list inherited constants if turned off" do
-    consts = P(:SubYard).constants(:inherited => false)
+    consts = P(:SubYard).constants(false)
     consts.should_not include(P("YARD::CONST1"))
     consts.should include(P("SubYard::CONST3"))
   end

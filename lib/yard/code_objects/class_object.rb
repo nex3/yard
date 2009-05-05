@@ -26,42 +26,21 @@ module YARD::CodeObjects
         m.inheritance_tree(include_mods)
       end.flatten
     end
-    
-    def meths(opts = {})
-      opts = SymbolHash[:inherited => true].update(opts)
-      super(opts) + (opts[:inherited] ? inherited_meths(opts) : [])
+
+    def inherited_children
+      flatten_mtype_hash reject_children_hash(inherited_children_hash, local_children_hash)
     end
-    
+
     def inherited_meths(opts = {})
-      inheritance_tree[1..-1].inject([]) do |list, superclass|
-        if superclass.is_a?(Proxy)
-          list
-        else
-          list += superclass.meths(opts).reject do |o|
-            child(:name => o.name, :scope => o.scope) ||
-              list.find {|o2| o2.name == o.name && o2.scope == o.scope }
-          end
-        end
-      end
+      opts = meth_opts(opts)
+      opts.delete(:inherited)
+      inherited_children.select {|o| check_opts(o, opts) }
     end
-    
-    def constants(opts = {})
-      opts = SymbolHash[:inherited => true].update(opts)
-      super(opts) + (opts[:inherited] ? inherited_constants : [])
-    end
-    
+
     def inherited_constants
-      inheritance_tree[1..-1].inject([]) do |list, superclass|
-        if superclass.is_a?(Proxy)
-          list
-        else
-          list += superclass.constants.reject do |o|
-            child(:name => o.name) || list.find {|o2| o2.name == o.name }
-          end
-        end
-      end
+      inherited_children.select {|o| o.is_a? ConstantObject }
     end
-    
+
     ##
     # Sets the superclass of the object
     # 
@@ -84,6 +63,19 @@ module YARD::CodeObjects
         msg = "superclass #{@superclass.inspect} cannot be the same as the declared class #{self.inspect}"
         @superclass = P(:Object)
         raise ArgumentError, msg
+      end
+    end
+
+    protected
+
+    def children_hash
+      merge_children_hash(inherited_children_hash, super)
+    end
+
+    def inherited_children_hash
+      inheritance_tree[1..-1].reverse.inject(mtype_hash) do |h, superclass|
+        next h unless superclass.is_a?(NamespaceObject)
+        merge_children_hash(h, superclass.children_hash)
       end
     end
   end

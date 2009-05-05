@@ -17,7 +17,7 @@ module YARD
       protected
       
       def has_constants?(object)
-        object.constants(:inherited => false).size > 0
+        object.constants(false).size > 0
       end
       
       def has_inherited_constants?(object)
@@ -42,7 +42,7 @@ module YARD
         all_consts = current_object.inherited_constants
         current_object.inheritance_tree[1..-1].each do |superclass|
           next if superclass.is_a?(CodeObjects::Proxy)
-          consts = superclass.constants(:inherited => false).select {|c| all_consts.include?(c) }
+          consts = superclass.constants(false).select {|c| all_consts.include?(c) }
           next if consts.empty?
           yield(superclass, consts)
         end
@@ -62,7 +62,7 @@ module YARD
         all_consts = current_object.included_constants
         current_object.mixins(:instance).each do |superclass|
           next if superclass.is_a?(CodeObjects::Proxy)
-          consts = superclass.constants(:inherited => false).select {|c| all_consts.include?(c) }
+          consts = superclass.constants(false).select {|c| all_consts.include?(c) }
           next if consts.empty?
           yield(superclass, consts)
         end
