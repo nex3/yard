@@ -2,7 +2,11 @@ class SymbolHash < Hash
   def initialize(symbolize_value = true)
     @symbolize_value = symbolize_value
   end
-  
+
+  # @overload [](hsh)
+  #   @param [Hash] hsh
+  # @overload [](*arr)
+  #   @param [Array] arr
   def self.[](*hsh)
     obj = new;
     if hsh.size == 1 && hsh.first.is_a?(Hash)

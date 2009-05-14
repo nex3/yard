@@ -23,7 +23,9 @@ module YARD
         def register_template_path(path)
           template_paths.unshift(path)
         end
-        
+
+        # @overload before_section(condition)
+        # @overload before_section(section, condition)
         def before_section(*args)
           if args.size == 1
             before_section_filters.push [nil, args.first]

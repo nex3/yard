@@ -178,8 +178,10 @@ module YARD
   end
 end
 
-# Shortcut for creating a YARD::CodeObjects::Proxy 
-# via a path
+# Shortcut for creating a YARD::CodeObjects::Proxy via a path
+#
+# @overload P(name, inherited = false)
+# @overload P(namespace, name, inherited = false)
 # 
 # @see YARD::CodeObjects::Proxy
 # @see YARD::Registry::resolve
