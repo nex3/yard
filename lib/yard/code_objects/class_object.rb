@@ -68,7 +68,7 @@ module YARD::CodeObjects
 
     protected
 
-    def children_hash
+    def children_hash(no_class_mixins = false)
       merge_children_hash(inherited_children_hash, super)
     end
 
