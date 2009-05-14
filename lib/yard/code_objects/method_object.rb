@@ -54,5 +54,7 @@ module YARD::CodeObjects
     def member_type; scope == :class ? :cmeth : :imeth; end
 
     def sep; scope == :class ? CSEP : ISEP end
+
+    def overload?; false; end
   end
 end

@@ -3,6 +3,7 @@ module YARD
     class MethodGenerator < Base
       before_generate :is_method?
       before_section :aliases, :has_aliases?
+      before_section :source, :isnt_overload?
       
       def sections_for(object) 
         [
@@ -15,16 +16,25 @@ module YARD
             ], 
             G(DeprecatedGenerator), 
             G(DocstringGenerator), 
-            G(TagsGenerator), 
-            G(SourceGenerator)
+            G(TagsGenerator),
+            G(OverloadsGenerator),
+            :source
           ]
         ]
       end
       
       protected
-      
+
+      def source(object)
+        render_section(G(SourceGenerator), object)
+      end
+
       def has_aliases?(object)
         !object.aliases.empty?
+      end
+
+      def isnt_overload?(object)
+        !object.overload?
       end
     end
   end

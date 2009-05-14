@@ -6,13 +6,7 @@ module YARD
         when CodeObjects::MethodObject
           [
             :header, 
-            [
-              G(DeprecatedGenerator), 
-              G(DocstringGenerator), 
-              G(MethodSignatureGenerator), 
-              G(TagsGenerator), 
-              G(SourceGenerator)
-            ]
+            [G(MethodGenerator)]
           ]
         when CodeObjects::NamespaceObject
           [
