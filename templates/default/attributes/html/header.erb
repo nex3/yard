@@ -10,7 +10,7 @@
           <th class="name"><%= h name %></td>
           <td class="readwrite">
             [<%= ['read', 'write'].map {|t| 
-                rw[t] && !rw[t].is_explicit? ? "<span id='#{anchor_for rw[t]}'>#{t[0,1].upcase}</span>" : t[0,1].upcase
+                rw[t] && (rw[t].is_explicit? ? t[0,1].upcase : "<span id='#{anchor_for rw[t]}'>#{t[0,1].upcase}</span>")
               }.compact.join %>] 
           </td>
           <td class="visibility">
