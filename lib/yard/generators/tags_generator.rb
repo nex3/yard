@@ -5,13 +5,17 @@ module YARD
       before_section :option, :has_options?
       
       def sections_for(object)
-        [:header, [:param, :yieldparam, :return, :raise, :author, :version, :since, :see]]
+        [:header, [:param, :yieldparam, :yieldreturn, :return, :raise, :author, :version, :since, :see]]
       end
       
       def yieldparam(object)
         render_tags :yieldparam
       end
-      
+
+      def yieldreturn(object)
+        render_tags :yieldreturn
+      end
+
       def return(object)
         render_tags :return
       end
