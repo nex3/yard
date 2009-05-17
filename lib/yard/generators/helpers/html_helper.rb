@@ -151,7 +151,11 @@ module YARD
       end
     
       def anchor_for(object)
-        urlencode case object
+        h raw_anchor_for(object)
+      end
+
+      def raw_anchor_for(object)
+        case object
         when CodeObjects::MethodObject
           "#{object.name}-#{object.scope}_#{object.type}"
         when CodeObjects::Base
@@ -188,7 +192,7 @@ module YARD
           link = objpath
         end
       
-        link + (anchor ? '#' + anchor_for(anchor) : '')
+        link + (anchor ? '#' + urlencode(raw_anchor_for(anchor)) : '')
       end
 
       def html_syntax_highlight(source)
