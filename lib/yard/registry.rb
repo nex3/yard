@@ -113,6 +113,7 @@ module YARD
       scan = StringScanner.new(path.to_s)
       return namespace if scan.eos?
       namespace = root if scan.scan(/#{CodeObjects::NSEPQ}/)
+      return @namespace[path.to_s] if namespace == root && @namespace[path.to_s]
 
       while namespace
         return if namespace.is_a?(CodeObjects::Proxy)
