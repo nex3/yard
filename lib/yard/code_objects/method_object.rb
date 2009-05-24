@@ -50,6 +50,8 @@ module YARD::CodeObjects
     def name(prefix = false)
       ((prefix ? (sep == ISEP ? sep : "") : "") + super().to_s).to_sym
     end
+
+    def member_type; scope == :class ? :cmeth : :imeth; end
     
     protected
     

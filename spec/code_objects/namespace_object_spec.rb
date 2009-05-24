@@ -96,6 +96,34 @@ describe YARD::CodeObjects::NamespaceObject do
     a.instance_attributes.keys.should include(:a)
     a.instance_attributes.keys.should include(:b)
   end
+
+  describe "#children(true)" do
+    before :each do
+      @mod = ModuleObject.new(:root, :Mod)
+      @mod2 = ModuleObject.new(@mod, :Mod2)
+      @mod.mixins(:instance) << @mod2
+      @meth1 = MethodObject.new(@mod, :Mod2)
+      @meth2 = MethodObject.new(@mod, :meth_conflict)
+      @meth3 = MethodObject.new(@mod2, :meth_conflict)
+      @meth4 = MethodObject.new(@mod2, :meth)
+
+      @children = @mod.children(true)
+    end
+
+    it "should include all children" do
+      @children.should include(@meth1)
+      @children.should include(@meth2)
+      @children.should include(@mod2)
+    end
+
+    it "should include children once-removed" do
+      @children.should include(@meth4)
+    end
+
+    it "should not include overridden children" do
+      @children.should_not include(@meth3)
+    end
+  end
 end
 
 describe YARD::CodeObjects::NamespaceObject, '#constants/#included_constants' do
@@ -130,7 +158,7 @@ describe YARD::CodeObjects::NamespaceObject, '#constants/#included_constants' do
   end
   
   it "should allow :inherited to be set to false to ignore included constants" do
-    consts = P(:C).constants(:inherited => false)
+    consts = P(:C).constants(false)
     consts.should_not include(P('A::CONST1'))
     consts.should include(P('C::CONST4'))
   end

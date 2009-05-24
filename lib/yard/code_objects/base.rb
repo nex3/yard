@@ -207,6 +207,19 @@ module YARD
       def type
         self.class.name.split(/#{NSEPQ}/).last.gsub(/Object$/, '').downcase.to_sym
       end
+
+      ##
+      # The type of namespace member this object is.
+      #
+      # For example, classes and modules are both of type <tt>:const</tt>,
+      # because they're in the same namespace as constants.
+      #
+      # Valid values are <tt>:const</tt>, <tt>:cvar</tt>, <tt>:imeth</tt>, and <tt>:cmeth</tt>.
+      #
+      # @return [Symbol] The type of namespace member
+      def member_type
+        raise NotImplementedError
+      end
     
       def path
         if parent && parent != Registry.root

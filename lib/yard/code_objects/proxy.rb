@@ -117,6 +117,20 @@ module YARD
         end
       end
       def type=(type) Registry.proxy_types[path] = type.to_sym end
+
+      def member_type
+        if obj = to_obj
+          obj.member_type
+        else
+          return :proxy unless path =~ /(#{ISEPQ}|#{NSEPQ}|#{CSEPQ}|^)(#{CONSTANTMATCH}|#{METHODNAMEMATCH}|@@\w+)/
+          sep, name = $1, $2
+          return :imeth if sep == NSEP
+          return :cmeth if sep == CSEP
+          return :cvar if name =~ /@@\w+/
+          return :const if name =~ CONSTANTMATCH
+          return :imeth
+        end
+      end
       
       def instance_of?(klass)
         self.class == klass
