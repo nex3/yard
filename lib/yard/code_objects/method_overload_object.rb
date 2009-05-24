@@ -1,10 +1,10 @@
 module YARD
   module CodeObjects
-    class MethodOverloadObject
-      attr_accessor :docstring, :method, :name, :parameters
+    class MethodOverloadObject < ObjectWrapper
+      attr_accessor :docstring, :name, :parameters
 
       def initialize(method, name)
-        self.method = method
+        super(method)
         self.name = name.to_sym
         self.parameters = []
         self.docstring = YARD::Docstring.new('', self)
@@ -19,7 +19,7 @@ module YARD
       #   the comments attached to the code object to be parsed 
       #   into a docstring and meta tags.
       def docstring=(comments)
-        @docstring = Docstring === comments ? comments : Docstring.new(comments, method)
+        @docstring = Docstring === comments ? comments : Docstring.new(comments, wrapped)
       end
 
       def tag(name); @docstring.tag(name) end
@@ -27,7 +27,7 @@ module YARD
       def has_tag?(name); @docstring.has_tag?(name) end
 
       def name(prefix = false)
-        ((prefix ? method.sep : "") + @name.to_s).to_sym
+        ((prefix ? wrapped.sep : "") + @name.to_s).to_sym
       end
     end
   end
