@@ -1,13 +1,19 @@
 module YARD::CodeObjects
   class MethodObject < Base
-    attr_accessor :visibility, :scope, :explicit, :parameters
+    attr_accessor :visibility, :scope, :explicit, :parameters, :overloads
     
     def initialize(namespace, name, scope = :instance) 
       self.visibility = :public
       self.scope = scope
+      self.overloads = []
       self.parameters = []
 
       super
+    end
+
+    def overloads
+      return @overloads unless @overloads.empty?
+      [self]
     end
     
     def scope=(v) 
@@ -50,9 +56,9 @@ module YARD::CodeObjects
     def name(prefix = false)
       ((prefix ? (sep == ISEP ? sep : "") : "") + super().to_s).to_sym
     end
-    
-    protected
-    
+
+    def member_type; scope == :class ? :cmeth : :imeth; end
+
     def sep
       if scope == :class
         namespace && namespace != YARD::Registry.root ? CSEP : NSEP

@@ -41,12 +41,12 @@ describe YARD::Handlers::MethodHandler do
   it "should handle overloads" do
     meth = P('Foo#foo')
 
-    o1 = meth.tags(:overload).first
+    o1 = meth.overloads.first
     o1.name.should == :bar
     o1.parameters.should == [[:a, nil], [:b, "1"]]
     o1.tag(:return).type.should == "String"
 
-    o2 = meth.tags(:overload)[1]
+    o2 = meth.overloads[1]
     o2.name.should == :baz
     o2.parameters.should == [[:b, nil], [:c, nil]]
     o2.tag(:return).type.should == "Fixnum"
