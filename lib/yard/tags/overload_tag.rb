@@ -15,17 +15,16 @@ module YARD
         
       def object=(value)
         super(value)
-        docstring.object = value
+        @docstring = Docstring.new(@docstring, value) if @docstring.class == String
       end
         
       private
       
       def parse_tag(raw_text)
-        @signature, text = raw_text.split(/\r?\n/, 2)
+        @signature, @docstring = raw_text.split(/\r?\n/, 2)
+        numspaces = @docstring[/\A(\s*)/, 1].length
+        @docstring.gsub!(/^\s{#{numspaces}}/, '').strip!
         @signature.strip!
-        numspaces = text[/\A(\s*)/, 1].length
-        text.gsub!(/^\s{#{numspaces}}/, '').strip!
-        @docstring = Docstring.new(text, nil)
       end
       
       def parse_signature
