@@ -60,7 +60,7 @@ describe YARD::Registry do
     Registry.resolve(yard, "#hello", false).should be_nil
     Registry.resolve(yard, "#hello", true).should == imeth
     Registry.resolve(yard, "class_hello", false).should be_nil
-    Registry.resolve(yard, "class_hello", true).should == cmeth
+    Registry.resolve(yard, "class_hello", true).should be_nil
   end
   
   it "should allow symbols as object type in #all" do
