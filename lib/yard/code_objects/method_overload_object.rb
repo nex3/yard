@@ -29,6 +29,9 @@ module YARD
       def name(prefix = false)
         ((prefix ? wrapped.sep : "") + @name.to_s).to_sym
       end
+
+      def overloads; []; end
+      def overload?; true; end
     end
   end
 end

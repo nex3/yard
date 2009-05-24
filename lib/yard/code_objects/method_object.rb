@@ -66,5 +66,7 @@ module YARD::CodeObjects
         ISEP
       end
     end
+
+    def overload?; false; end
   end
 end
