@@ -23,11 +23,6 @@ module YARD
           ""
         end
       end
-      
-      # The @overload signature can be pretty much used word for word
-      def format_overload(overload)
-        h overload.signature.gsub(/\A\s*(def\s+)?[^ \(]+/, '')
-      end
     end
   end
 end
