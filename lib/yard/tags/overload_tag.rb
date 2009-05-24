@@ -17,10 +17,6 @@ module YARD
         super(value)
         docstring.object = value
       end
-      
-      def method_missing(sym, *args, &block)
-        object ? object.send(sym, *args, &block) : super
-      end
         
       private
       
