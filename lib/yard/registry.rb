@@ -1,5 +1,6 @@
 require 'singleton'
 require 'find'
+require 'strscan'
 
 module YARD
   class Registry 
@@ -76,7 +77,34 @@ module YARD
       namespace.keys.map {|k| k.to_s }
     end
       
-    def at(path) path.to_s.empty? ? root : namespace[path] end
+    def at(path, inherited = false)
+      return root if path.to_sym == :root
+
+      namespace = root
+      scan = StringScanner.new(path.to_s)
+      while scan.scan(/#{CodeObjects::CONSTANTMATCH}|(?:#{CodeObjects::METHODNAMEMATCH}|@@\w+)$/)
+        name = scan.matched.to_sym
+        unless new_namespace = namespace.child(:type => CodeObjects::NamespaceObject, :name => name)
+          obj = namespace.child(:type => [CodeObjects::ConstantObject, CodeObjects::ClassVariableObject], :name => name)
+          return obj if obj
+          return unless scan.eos?
+          return namespace.meths(:scope => :class, :included => inherited, :inherited => inherited).
+            find {|m| m.name == name}
+        end
+
+        namespace = new_namespace
+        scan.scan(/#{CodeObjects::NSEP}/)
+      end
+      return namespace if scan.eos?
+
+      sep = scan.scan(/#{CodeObjects::NSEP}|#{CodeObjects::ISEP}/)
+      return unless namespace.is_a?(CodeObjects::NamespaceObject) && scan.scan(CodeObjects::METHODNAMEMATCH) && scan.eos?
+
+      name = scan.matched.to_sym
+      opts = {:included => inherited, :inherited => inherited}
+      opts[:scope] = sep == CodeObjects::NSEP ? :class : :instance if sep
+      namespace.meths(opts).find {|m| m.name == name}
+    end
     alias_method :[], :at
     
     def root; namespace[:root] end
@@ -103,7 +131,7 @@ module YARD
       namespace[object.path] = object
     end
 
-    def resolve(namespace, name, inheritance = false, proxy_fallback = false)
+    def resolve(namespace, name, inherited = false, proxy_fallback = false)
       if namespace.is_a?(CodeObjects::Proxy)
         return proxy_fallback ? CodeObjects::Proxy.new(namespace, name) : nil
       end
@@ -115,25 +143,29 @@ module YARD
       end
       orignamespace = namespace
 
-      name = name.to_s
-      if name =~ /^#{CodeObjects::NSEPQ}/
-        [name, name[2..-1]].each do |n|
-          return at(n) if at(n)
+      newname = name.to_s.gsub(/^#{CodeObjects::ISEP}/, '')
+      if name =~ /^#{CodeObjects::NSEP}/
+        [name, newname[2..-1]].each do |n|
+          if obj = at(n, inherited)
+            return obj
+          end
         end
       else
         while namespace
-          nss = inheritance ? namespace.inheritance_tree(true) : [namespace]
-          nss.each do |ns|
-            next if ns.is_a?(CodeObjects::Proxy)
-            found = partial_resolve(ns, name)
+          [CodeObjects::NSEP, CodeObjects::ISEP].each do |s|
+            path = newname
+            if namespace != root
+              path = [namespace.path, newname].join(s)
+            end
+            found = at(path, inherited)
             return found if found
           end
           namespace = namespace.parent
         end
 
         # Look for ::name or #name in the root space
-        [CodeObjects::ISEP, CodeObjects::NSEP].each do |s|
-          found = at(s + name)
+        [CodeObjects::NSEP, CodeObjects::ISEP].each do |s|
+          found = at(s + newname, inherited)
           return found if found
         end
       end
