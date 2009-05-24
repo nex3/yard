@@ -20,8 +20,6 @@ describe YARD::Registry do
     o2 = ModuleObject.new(o1, :B)
     o3 = ModuleObject.new(o2, :C)
     Registry.resolve(o3, "::A").should == o1
-    
-    Registry.resolve(o3, "::String", false, true).should == P(:String)
   end
   
   it "should resolve instance methods with # prefix" do

@@ -78,32 +78,7 @@ module YARD
     end
       
     def at(path, inherited = false)
-      return root if path.to_sym == :root
-
-      namespace = root
-      scan = StringScanner.new(path.to_s)
-      while scan.scan(/#{CodeObjects::CONSTANTMATCH}|(?:#{CodeObjects::METHODNAMEMATCH}|@@\w+)$/)
-        name = scan.matched.to_sym
-        unless new_namespace = namespace.child(:type => CodeObjects::NamespaceObject, :name => name)
-          obj = namespace.child(:type => [CodeObjects::ConstantObject, CodeObjects::ClassVariableObject], :name => name)
-          return obj if obj
-          return unless scan.eos?
-          return namespace.meths(:scope => :class, :inherited => inherited).
-            find {|m| m.name == name}
-        end
-
-        namespace = new_namespace
-        scan.scan(/#{CodeObjects::NSEP}/)
-      end
-      return namespace if scan.eos?
-
-      sep = scan.scan(/#{CodeObjects::NSEP}|#{CodeObjects::ISEP}/)
-      return unless namespace.is_a?(CodeObjects::NamespaceObject) && scan.scan(CodeObjects::METHODNAMEMATCH) && scan.eos?
-
-      name = scan.matched.to_sym
-      opts = {:inherited => inherited}
-      opts[:scope] = sep == CodeObjects::ISEP ? :instance : :class if sep
-      namespace.meths(opts).find {|m| m.name == name}
+      resolve(:root, path, inherited)
     end
     alias_method :[], :at
     
@@ -131,62 +106,53 @@ module YARD
       namespace[object.path] = object
     end
 
-    def resolve(namespace, name, inherited = false, proxy_fallback = false)
-      if namespace.is_a?(CodeObjects::Proxy)
-        return proxy_fallback ? CodeObjects::Proxy.new(namespace, name) : nil
-      end
-      
-      if namespace == :root || !namespace
-        namespace = root
-      else
-        namespace = namespace.parent until namespace.is_a?(CodeObjects::NamespaceObject)
-      end
-      orignamespace = namespace
+    def resolve(namespace, path, inherited = false)
+      return root if path.to_sym == :root
+      namespace = root if !namespace || namespace == :root
 
-      newname = name.to_s.gsub(/^#{CodeObjects::ISEP}/, '')
-      if name =~ /^#{CodeObjects::NSEP}/
-        [name, newname[2..-1]].each do |n|
-          if obj = at(n, inherited)
-            return obj
-          end
-        end
-      else
-        while namespace
-          [CodeObjects::NSEP, CodeObjects::ISEP].each do |s|
-            path = newname
-            if namespace != root
-              path = [namespace.path, newname].join(s)
-            end
-            found = at(path, inherited)
-            return found if found
-          end
-          namespace = namespace.parent
-        end
+      scan = StringScanner.new(path.to_s)
+      return namespace if scan.eos?
+      namespace = root if scan.scan(/#{CodeObjects::NSEPQ}/)
 
-        # Look for ::name or #name in the root space
-        [CodeObjects::NSEP, CodeObjects::ISEP].each do |s|
-          found = at(s + newname, inherited)
-          return found if found
-        end
+      while namespace
+        return if namespace.is_a?(CodeObjects::Proxy)
+        obj = resolve_under(namespace, scan.dup, inherited)
+        return obj if obj
+        namespace = namespace.namespace
       end
-      proxy_fallback ? CodeObjects::Proxy.new(orignamespace, name) : nil
+
+      nil
     end
 
     private
   
     attr_accessor :namespace
 
-    def partial_resolve(namespace, name)
-      [CodeObjects::NSEP, CodeObjects::CSEP, ''].each do |s|
-        next if s.empty? && name =~ /^\w/
-        path = name
-        if namespace != root
-          path = [namespace.path, name].join(s)
+    def resolve_under(namespace, scan, inherited)
+      cmeth = false
+      while scan.scan(/#{CodeObjects::CONSTANTMATCH}|(?:#{CodeObjects::METHODNAMEMATCH}|@@\w+)$/)
+        name = scan.matched.to_sym
+        unless new_namespace = namespace.child(:inherited => inherited, :name => name,
+            :type => CodeObjects::NamespaceObject)
+          obj = namespace.child(:type => [CodeObjects::ConstantObject, CodeObjects::ClassVariableObject], :name => name)
+          return obj if obj
+          return unless scan.eos?
+          return namespace.meths(:scope => cmeth ? :class : [:class, :instance], :inherited => inherited).
+            find {|m| m.name == name}
         end
-        found = at(path)
-        return found if found
+
+        namespace = new_namespace
+        cmeth = scan.scan(/#{CodeObjects::NSEPQ}/)
       end
-      nil
+      return namespace if scan.eos?
+
+      sep = scan.scan(/#{CodeObjects::NSEPQ}|#{CodeObjects::ISEPQ}|#{CodeObjects::CSEPQ}/)
+      return unless namespace.is_a?(CodeObjects::NamespaceObject) && scan.scan(CodeObjects::METHODNAMEMATCH) && scan.eos?
+
+      name = scan.matched.to_sym
+      opts = {:inherited => inherited}
+      opts[:scope] = sep == CodeObjects::ISEP ? :instance : :class if sep
+      namespace.meths(opts).find {|m| m.name == name}
     end
   end
 end

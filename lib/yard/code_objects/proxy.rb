@@ -191,7 +191,15 @@ end
 # 
 # @see YARD::CodeObjects::Proxy
 # @see YARD::Registry::resolve
-def P(namespace, name = nil, inherited = false)
-  namespace, name = nil, namespace if name.nil?
-  YARD::Registry.resolve(namespace, name, inherited, true)
+def P(arg1, *args)
+  if args.empty? || args.first == true || args.first == false
+    name = arg1
+    inherited = args.first
+  else
+    namespace = arg1
+    name, inherited = args
+  end
+
+  return YARD::CodeObjects::Proxy.new(namespace, name) if namespace.is_a?(YARD::CodeObjects::Proxy)
+  YARD::Registry.resolve(namespace, name, inherited) || YARD::CodeObjects::Proxy.new(namespace, name)
 end
