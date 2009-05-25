@@ -27,7 +27,7 @@ describe YARD::Tags::OverloadTag do
   end
   
   it "should respond to #tag, #tags and #has_tag?" do
-    @tag.object = mock
+    @tag.object = mock(:object)
     @tag.tags.size.should == 2
     @tag.tag(:param).name.should == "a"
     @tag.has_tag?(:return).should == true

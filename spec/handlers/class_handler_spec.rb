@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe YARD::Handlers::ClassHandler do
+describe "YARD::Handlers::Ruby::#{RUBY18 ? "Legacy::" : ""}ClassHandler" do
   before { parse_file :class_handler_001, __FILE__ }
   
   it "should parse a class block with docstring" do
@@ -61,8 +61,12 @@ describe YARD::Handlers::ClassHandler do
     P('Test5').superclass.should == P(:Array)
   end
   
+  it "should handle a superclass of the same name in the form ::ClassName" do
+    P('Q::Logger').superclass.should == P(:Logger)
+  end
+  
   it "should raise an UndocumentableError if the superclass is invalid but it should create the class." do
-    ["VSD^#}}", 'not.aclass', 'self', 'AnotherClass.new'].each do |klass|
+    ['@@INVALID', 'hi', '$MYCLASS', 'AnotherClass.new'].each do |klass|
       Registry.clear
       undoc_error "class A < #{klass}; end"
       Registry.at('A').should_not be_nil

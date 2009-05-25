@@ -37,7 +37,8 @@ module YARD
           meth, args = $1, $2
           meth.gsub!(/\s+/,'')
           # FIXME refactor this code to not make use of the Handlers::Base class (tokval_list should be moved)
-          args = YARD::Handlers::Base.new(nil, nil).send(:tokval_list, YARD::Parser::TokenList.new(args), :all)
+          toks = YARD::Parser::Ruby::Legacy::TokenList.new(args)
+          args = YARD::Handlers::Ruby::Legacy::Base.new(nil, nil).send(:tokval_list, toks, :all)
           args.map! {|a| k, v = *a.split('=', 2); [k.strip.to_sym, (v ? v.strip : nil)] } if args
           @name = meth.to_sym
           @parameters = args

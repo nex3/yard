@@ -37,12 +37,13 @@ module YARD
   
   module Generators
     module Helpers
-      autoload :BaseHelper,             'yard/generators/helpers/base_helper'
-      autoload :FilterHelper,           'yard/generators/helpers/filter_helper'
-      autoload :HtmlHelper,             'yard/generators/helpers/html_helper'
-      autoload :MarkupHelper,           'yard/generators/helpers/markup_helper'
-      autoload :MethodHelper,           'yard/generators/helpers/method_helper'
-      autoload :UMLHelper,              'yard/generators/helpers/uml_helper'
+      autoload :BaseHelper,                 'yard/generators/helpers/base_helper'
+      autoload :FilterHelper,               'yard/generators/helpers/filter_helper'
+      autoload :HtmlHelper,                 'yard/generators/helpers/html_helper'
+      autoload :HtmlSyntaxHighlightHelper,  'yard/generators/helpers/html_syntax_highlight_helper'
+      autoload :MarkupHelper,               'yard/generators/helpers/markup_helper'
+      autoload :MethodHelper,               'yard/generators/helpers/method_helper'
+      autoload :UMLHelper,                  'yard/generators/helpers/uml_helper'
     end
     
     autoload :AttributesGenerator,      'yard/generators/attributes_generator'
@@ -70,31 +71,65 @@ module YARD
   end
   
   module Handlers
-    autoload :AliasHandler,         'yard/handlers/alias_handler'
-    autoload :AttributeHandler,     'yard/handlers/attribute_handler'
-    autoload :Base,                 'yard/handlers/base'
-    autoload :ClassHandler,         'yard/handlers/class_handler'
-    autoload :ClassVariableHandler, 'yard/handlers/class_variable_handler'
-    autoload :ConstantHandler,      'yard/handlers/constant_handler'
-    autoload :ExceptionHandler,     'yard/handlers/exception_handler'
-    autoload :MethodHandler,        'yard/handlers/method_handler'
-    autoload :MixinHandler,         'yard/handlers/mixin_handler'
-    autoload :ExtendHandler,        'yard/handlers/extend_handler'
-    autoload :ModuleHandler,        'yard/handlers/module_handler'
-    autoload :VisibilityHandler,    'yard/handlers/visibility_handler'
-    autoload :UndocumentableError,  'yard/handlers/base'
-    autoload :YieldHandler,         'yard/handlers/yield_handler'
+    module Ruby
+      module Legacy
+        autoload :Base,                 'yard/handlers/ruby/legacy/base'
+
+        autoload :AliasHandler,         'yard/handlers/ruby/legacy/alias_handler'
+        autoload :AttributeHandler,     'yard/handlers/ruby/legacy/attribute_handler'
+        autoload :ClassHandler,         'yard/handlers/ruby/legacy/class_handler'
+        autoload :ClassVariableHandler, 'yard/handlers/ruby/legacy/class_variable_handler'
+        autoload :ConstantHandler,      'yard/handlers/ruby/legacy/constant_handler'
+        autoload :ExceptionHandler,     'yard/handlers/ruby/legacy/exception_handler'
+        autoload :ExtendHandler,        'yard/handlers/ruby/legacy/extend_handler'
+        autoload :MethodHandler,        'yard/handlers/ruby/legacy/method_handler'
+        autoload :MixinHandler,         'yard/handlers/ruby/legacy/mixin_handler'
+        autoload :ModuleHandler,        'yard/handlers/ruby/legacy/module_handler'
+        autoload :VisibilityHandler,    'yard/handlers/ruby/legacy/visibility_handler'
+        autoload :YieldHandler,         'yard/handlers/ruby/legacy/yield_handler'
+      end
+
+      autoload :Base,                   'yard/handlers/ruby/base'
+
+      autoload :AliasHandler,           'yard/handlers/ruby/alias_handler'
+      autoload :AttributeHandler,       'yard/handlers/ruby/attribute_handler'
+      autoload :ClassHandler,           'yard/handlers/ruby/class_handler'
+      autoload :ClassConditionHandler,  'yard/handlers/ruby/class_condition_handler'
+      autoload :ClassVariableHandler,   'yard/handlers/ruby/class_variable_handler'
+      autoload :ConstantHandler,        'yard/handlers/ruby/constant_handler'
+      autoload :ExceptionHandler,       'yard/handlers/ruby/exception_handler'
+      autoload :ExtendHandler,          'yard/handlers/ruby/extend_handler'
+      autoload :MethodHandler,          'yard/handlers/ruby/method_handler'
+      autoload :MethodConditionHandler, 'yard/handlers/ruby/method_condition_handler'
+      autoload :MixinHandler,           'yard/handlers/ruby/mixin_handler'
+      autoload :ModuleHandler,          'yard/handlers/ruby/module_handler'
+      autoload :VisibilityHandler,      'yard/handlers/ruby/visibility_handler'
+      autoload :YieldHandler,           'yard/handlers/ruby/yield_handler'
+    end
+
+    autoload :Base,                       'yard/handlers/base'
+    autoload :Processor,                  'yard/handlers/processor'
   end
 
   module Parser
-    module RubyToken
-      require 'yard/parser/ruby_lex' # Too much to include manually
+    module Ruby
+      module Legacy
+        autoload :Statement,      'yard/parser/ruby/legacy/statement'
+        autoload :StatementList,  'yard/parser/ruby/legacy/statement_list'
+        autoload :TokenList,      'yard/parser/ruby/legacy/token_list'
+
+        module RubyToken
+          require 'yard/parser/ruby/legacy/ruby_lex' # Too much to include manually
+        end
+      end
+
+      autoload :AstNode,           'yard/parser/ruby/ast_node'
+      autoload :ParserSyntaxError, 'yard/parser/ruby/ruby_parser'
+      autoload :RubyParser,        'yard/parser/ruby/ruby_parser'
     end
-    
-    autoload :SourceParser,   'yard/parser/source_parser'
-    autoload :Statement,      'yard/parser/statement'
-    autoload :StatementList,  'yard/parser/statement_list'
-    autoload :TokenList,      'yard/parser/token_list'
+
+    autoload :SourceParser,        'yard/parser/source_parser'
+    autoload :UndocumentableError, 'yard/parser/source_parser'
   end
   
   module Rake
@@ -123,9 +158,6 @@ module YARD
   autoload :Docstring, 'yard/docstring'
   autoload :Registry,  'yard/registry'
 end
-
-# Load handlers immediately
-YARD::Handlers.constants.each {|c| YARD::Handlers.const_get(c) }
 
 # P() needs to be loaded right away
 YARD::CodeObjects::Proxy
