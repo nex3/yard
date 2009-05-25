@@ -1,14 +1,18 @@
 require 'stringio'
-require 'continuation' if RUBY19
+require 'continuation' unless RUBY18
 
 module YARD
   module Parser
+    class UndocumentableError < Exception; end
     class LoadOrderError < Exception; end
     
     # Responsible for parsing a source file into the namespace
     class SourceParser 
       class << self
+        attr_accessor :parser_type
+        
         def parse(paths = "lib/**/*.rb", level = log.level)
+          log.debug("Parsing #{paths} with `#{parser_type}` parser")
           if paths.is_a?(Array)
             files = paths.map {|p| Dir[p] }.flatten
           else
@@ -20,8 +24,12 @@ module YARD
           end
         end
       
-        def parse_string(content)
-          new.parse(StringIO.new(content))
+        def parse_string(content, ptype = parser_type)
+          new(ptype).parse(StringIO.new(content))
+        end
+        
+        def tokenize(content, ptype = parser_type)
+          new(ptype).tokenize(content)
         end
 
         private
@@ -34,7 +42,7 @@ module YARD
                 file.last.call
               elsif file.is_a?(String)
                 log.debug("Processing #{file}...")
-                new(true).parse(file)
+                new(parser_type, true).parse(file)
               end
             rescue LoadOrderError => e
               # Out of order file. Push the context to the end and we'll call it
@@ -44,67 +52,86 @@ module YARD
         end
       end
 
-      attr_reader :file
-      attr_accessor :namespace, :visibility, :scope, :owner, :load_order_errors
+      self.parser_type = :ruby
+      
+      attr_reader :file, :parser_type
 
-      def initialize(load_order_errors = false)
-        @file = "<STDIN>"
-        @namespace = YARD::Registry.root
-        @visibility = :public
-        @scope = :instance
-        @owner = @namespace
+      def initialize(parser_type = SourceParser.parser_type, load_order_errors = false)
         @load_order_errors = load_order_errors
+        @file = '(stdin)'
+        self.parser_type = parser_type
       end
 
       ##
       # Creates a new SourceParser that parses a file and returns
       # analysis information about it.
       #
-      # @param [String, TokenList, StatementList, #read] content the source file to parse
+      # @param [String, #read, Object] content the source file to parse
       def parse(content = __FILE__)
         case content
         when String
           @file = content
-          statements = StatementList.new(IO.read(content))
-        when TokenList
-          statements = StatementList.new(content)
-        when StatementList
-          statements = content
+          content = IO.read(content)
+          self.parser_type = parser_type_for_filename(file)
         else
-          if content.respond_to? :read
-            statements = StatementList.new(content.read)
-          else
-            raise ArgumentError, "Invalid argument for SourceParser::parse: #{content.inspect}:#{content.class}"
-          end
+          content = content.read if content.respond_to? :read
         end
+        
+        @parser = parse_statements(content)
+        post_process
+        @parser
+      end
+      
+      def tokenize(content)
+        case parser_type
+        when :c
+          raise NotImplementedError, "no support for C/C++ files"
+        when :ruby18
+          Ruby::Legacy::TokenList.new(content)
+        when :ruby
+          Ruby::RubyParser.parse(content).tokens
+        else
+          raise ArgumentError, "invalid parser type or unrecognized file"
+        end
+      end
+      
+      private
 
-        top_level_parse(statements)
+      def post_process
+        post = Handlers::Processor.new(@file, @load_order_errors, @parser_type)
+        post.process(@parser.enumerator)
       end
 
-      private
-        def top_level_parse(statements)
-            statements.each do |stmt|
-              find_handlers(stmt).each do |handler| 
-                begin
-                  handler.new(self, stmt).process
-                rescue LoadOrderError => loaderr
-                  raise # Pass this up
-                rescue Handlers::UndocumentableError => undocerr
-                  log.warn "in #{handler.to_s}: Undocumentable #{undocerr.message}"
-                  log.warn "\tin file '#{file}':#{stmt.tokens.first.line_no}:\n\n" + stmt.inspect + "\n"
-                rescue => e
-                  log.error "Unhandled exception in #{handler.to_s}:"
-                  log.error "#{e.class.class_name}: #{e.message}"
-                  log.error "  in `#{file}`:#{stmt.tokens.first.line_no}:\n\n#{stmt.inspect}\n"
-                  log.error "Stack trace:" + e.backtrace[0..5].map {|x| "\n\t#{x}" }.join + "\n"
-                end
-              end
-            end
-        end
+      def parser_type=(value)
+        @parser_type = value
+        validate_parser_type
+      end
 
-        def find_handlers(stmt)
-          Handlers::Base.subclasses.find_all {|sub| sub.handles? stmt.tokens }
+      def validate_parser_type
+        @parser_type = :ruby18 if RUBY18 && @parser_type == :ruby
+      end
+      
+      def parser_type_for_filename(filename)
+        case File.extname(filename)[1..-1].downcase
+        when "c", "cpp", "cxx"
+          :c
+        else # when "rb", "rbx", "erb"
+          parser_type == :ruby18 ? :ruby18 : :ruby
         end
+      end
+      
+      def parse_statements(content)
+        case parser_type
+        when :c
+          raise NotImplementedError, "no support for C/C++ files"
+        when :ruby18
+          Ruby::Legacy::StatementList.new(content)
+        when :ruby
+          Ruby::RubyParser.parse(content, file)
+        else
+          raise ArgumentError, "invalid parser type or unrecognized file"
+        end
+      end
     end
   end
 end

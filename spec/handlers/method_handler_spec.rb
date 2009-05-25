@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe YARD::Handlers::MethodHandler do
+describe "YARD::Handlers::Ruby::#{RUBY18 ? "Legacy::" : ""}MethodHandler" do
   before do
     log.enter_level(Logger::ERROR) do
       parse_file :method_handler_001, __FILE__ 
@@ -34,8 +34,8 @@ describe YARD::Handlers::MethodHandler do
   end
   
   it "should handle parameters" do
-    P('Foo#[]').parameters.should == [[:key, "'default'"]]
-    P('Foo#/').parameters.should == [[:x, "File.new('x', 'w')"], [:y, '2']]
+    P('Foo#[]').parameters.should == [['key', "'default'"]]
+    P('Foo#/').parameters.should == [['x', "File.new('x', 'w')"], ['y', '2']]
   end
 
   it "should handle overloads" do
@@ -43,12 +43,12 @@ describe YARD::Handlers::MethodHandler do
 
     o1 = meth.overloads.first
     o1.name.should == :bar
-    o1.parameters.should == [[:a, nil], [:b, "1"]]
+    o1.parameters.should == [['a', nil], ['b', "1"]]
     o1.tag(:return).type.should == "String"
 
     o2 = meth.overloads[1]
     o2.name.should == :baz
-    o2.parameters.should == [[:b, nil], [:c, nil]]
+    o2.parameters.should == [['b', nil], ['c', nil]]
     o2.tag(:return).type.should == "Fixnum"
   end
 end

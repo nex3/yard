@@ -172,7 +172,7 @@ module YARD
       #   the +Parser::Statement+ holding the source code or the raw source 
       #   as a +String+ for the definition of the code object only (not the block)
       def source=(statement)
-        if statement.is_a? Parser::Statement
+        if statement.is_a? Parser::Ruby::Legacy::Statement
           src = statement.tokens.to_s
           blk = statement.block ? statement.block.to_s : ""
           if src =~ /^def\s.*[^\)]$/ && blk[0,1] !~ /\r|\n/
@@ -182,6 +182,10 @@ module YARD
           @source = format_source(src + blk)
           self.line = statement.tokens.first.line_no
           self.signature = src
+        elsif statement.respond_to?(:source)
+          self.line = statement.line
+          self.signature = statement.first_line
+          @source = format_source(statement.source.strip)
         else
           @source = format_source(statement.to_s)
         end

@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe YARD::Handlers::ExceptionHandler do
+describe "YARD::Handlers::Ruby::#{RUBY18 ? "Legacy::" : ""}ExceptionHandler" do
   before { parse_file :exception_handler_001, __FILE__ }
   
   it "should not document an exception outside of a method" do
@@ -30,6 +30,6 @@ describe YARD::Handlers::ExceptionHandler do
   end
   
   it "should handle complex class names" do
-    P('Testing#mymethod5').tag(:raise).types.should == ['YARD::Handlers::UndocumentableError']
+    P('Testing#mymethod5').tag(:raise).types.should == ['YARD::Parser::UndocumentableError']
   end
 end
