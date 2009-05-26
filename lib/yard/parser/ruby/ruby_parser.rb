@@ -14,7 +14,7 @@ module YARD
           @file = filename
           @source = source
           @tokens = []
-          @comments = []
+          @comments = {}
           @charno = 0
         end
 
@@ -34,18 +34,7 @@ module YARD
         private
 
         PARSER_EVENT_TABLE.each do |event, arity|
-          node_class = case event
-          when /_ref\Z/
-            :ReferenceNode
-          when :params
-            :ParameterNode
-          when :call, :fcall, :command, :command_call
-            :MethodCallNode
-          when :if, :elsif, :if_mod, :unless, :unless_mod
-            :ConditionalNode
-          else
-            :AstNode
-          end
+          node_class = AstNode.node_class_for(event)
                     
           if /_new\z/ =~ event and arity == 0
             module_eval(<<-eof, __FILE__, __LINE__ + 1)
@@ -122,35 +111,33 @@ module YARD
 
         def on_comment(comment)
           visit_token(:comment, comment)
-
-          append_comment = false
-          if @comments.size > 0 && @comments.last.last == lineno - 1
-            append_comment = true
-          end
-  
+          
           comment = comment.gsub(/^\#{1,2}\s{0,1}/, '').chomp
+          append_comment = @comments[lineno - 1]
+          
           if append_comment
-            @comments.last.first.push(comment)
-            @comments.last[-1] = lineno
-          else
-            @comments << [[comment], lineno]
+            @comments.delete(lineno - 1)
+            comment = append_comment + "\n" + comment
           end
+          
+          @comments[lineno] = comment
         end
         
         def on_parse_error(msg)
-          raise ParserSyntaxError, "in `#{file}`:(#{lineno},#{column}): #{msg}"
+          raise ParserSyntaxError, "syntax error in `#{file}`:(#{lineno},#{column}): #{msg}"
         end
         
         def insert_comments
-          comments = @comments.dup
-          ast.traverse do |node|
+          root.traverse do |node|
             next if node.type == :list
-            comments.each.with_index do |c, i|
-              next if c.empty? || node.line.nil?
-              if node.line.between?(c.last, c.last + 2)
-                comments.delete_at(i)
-                node.docstring = c.first.join("\n")
-                break
+            if node.line
+              node.line.downto(node.line - 2) do |line|
+                comment = @comments[line]
+                if comment && !comment.empty?
+                  node.docstring = comment
+                  comments.delete(line)
+                  break
+                end
               end
             end
           end
