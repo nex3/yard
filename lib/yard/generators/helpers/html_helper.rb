@@ -17,6 +17,7 @@ module YARD
       end
 
       def htmlify(text, markup = options[:markup])
+        return text unless markup
         load_markup_provider(markup)
 
         case markup
@@ -112,14 +113,14 @@ module YARD
         link_url(url_for_file(filename, anchor), title)
       end
     
-      def link_object(object, otitle = nil, anchor = nil)
+      def link_object(object, otitle = nil, anchor = nil, relative = true)
         object = Registry.resolve(current_object, object, true, true) if object.is_a?(String)
         title = h(otitle ? otitle.to_s : object.path)
         return title unless serializer
 
         return title if object.is_a?(CodeObjects::Proxy)
       
-        link = url_for(object, anchor)
+        link = url_for(object, anchor, relative)
         link ? link_url(link, title) : title
       end
       
