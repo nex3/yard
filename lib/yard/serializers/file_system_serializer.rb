@@ -21,7 +21,7 @@ module YARD
       def serialized_path(object)
         return object if object.is_a?(String)
 
-        objname = object.name.to_s
+        objname = object != YARD::Registry.root ? object.name.to_s : "top-level-namespace"
         objname += '_' + object.scope.to_s[0,1] if object.is_a?(CodeObjects::MethodObject)
         fspath = [objname + (extension.empty? ? '' : ".#{extension}")]
         if object.namespace && object.namespace.path != ""
