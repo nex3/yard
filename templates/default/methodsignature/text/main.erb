@@ -1,7 +1,8 @@
 Method Signature
 ----------------
-<%= object.visibility %> <%= format_return_types object %> <%= object.name %><%= format_args object %> <%= format_block object %>  
-<% for overload in object.tags(:overload) %>
- <%= overload.name %><%= format_overload overload %>
+<% overloads(object).each do |overload| %>
+<%= overload.visibility %> <%= format_return_types overload %> <%= overload.name %><%= format_args overload %> <%= format_block overload %>
+
 <% end %>
+
 
