@@ -6,7 +6,11 @@ module YARD
       before_section :param, :has_params?
       
       def sections_for(object)
-        [:header, [:example, :param, :yieldparam, :yieldreturn, :return, :raise, :author, :version, :since, :see]]
+        [:header, [:example, :param, :yield, :yieldparam, :yieldreturn, :return, :raise, :todo, :author, :version, :since, :see]]
+      end
+      
+      def yield(object)
+        render_tags :yield
       end
       
       def yieldparam(object)
@@ -40,7 +44,7 @@ module YARD
       protected
       
       def has_params?(object)
-        tags_by_param(object).size > 0
+        object.is_a?(CodeObjects::MethodObject) && tags_by_param(object).size > 0
       end
       
       def has_tags?(object)
